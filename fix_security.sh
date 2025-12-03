@@ -458,7 +458,7 @@ fi
 
 # Проверка iptables
 if command -v iptables &> /dev/null; then
-    local input_rules=$(iptables -L INPUT -n 2>/dev/null | grep -c "ACCEPT\|DROP" || echo 0)
+    input_rules=$(iptables -L INPUT -n 2>/dev/null | grep -c "ACCEPT\|DROP" || echo 0)
     if [ "$input_rules" -gt 2 ]; then
         success "iptables: установлен, есть правила ($input_rules)"
     else
