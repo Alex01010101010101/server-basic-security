@@ -513,12 +513,25 @@ if [ -f "$SSH_CONFIG" ]; then
     echo -e "${CYAN}SSH конфигурация:${NC}"
     
     # Определяем порт SSH (проверяем и основной файл, и drop-in)
-    SSH_PORT=$(grep -hE "^Port " "$SSH_CONFIG" "$SSH_CONFIG_DIR"/*.conf 2>/dev/null | awk '{print $2}' | head -1)
+    SSH_PORT=$(grep -hE "^Port " "$SSH_CONFIG" 2>/dev/null | awk '{print $2}' | head -1)
+    if [ -d "$SSH_CONFIG_DIR" ]; then
+        SSH_PORT_DROPIN=$(grep -hE "^Port " "$SSH_CONFIG_DIR"/*.conf 2>/dev/null | awk '{print $2}' | head -1 || true)
+        [ -n "$SSH_PORT_DROPIN" ] && SSH_PORT="$SSH_PORT_DROPIN"
+    fi
     SSH_PORT=${SSH_PORT:-22}
     echo "  Port: $SSH_PORT"
     
     # Проверяем PermitRootLogin (учитываем drop-in файлы)
-    if grep -qE "^PermitRootLogin\s+yes" "$SSH_CONFIG" "$SSH_CONFIG_DIR"/*.conf 2>/dev/null; then
+    ROOT_LOGIN_YES=false
+    if grep -qE "^PermitRootLogin\s+yes" "$SSH_CONFIG" 2>/dev/null; then
+        ROOT_LOGIN_YES=true
+    fi
+    if [ -d "$SSH_CONFIG_DIR" ] && ls "$SSH_CONFIG_DIR"/*.conf &>/dev/null; then
+        if grep -qE "^PermitRootLogin\s+yes" "$SSH_CONFIG_DIR"/*.conf 2>/dev/null; then
+            ROOT_LOGIN_YES=true
+        fi
+    fi
+    if [ "$ROOT_LOGIN_YES" = true ]; then
         warning "PermitRootLogin: yes"
         SSH_ISSUES+=("root_password")
     else
@@ -526,7 +539,16 @@ if [ -f "$SSH_CONFIG" ]; then
     fi
     
     # Проверяем PasswordAuthentication
-    if grep -qE "^PasswordAuthentication\s+yes" "$SSH_CONFIG" "$SSH_CONFIG_DIR"/*.conf 2>/dev/null; then
+    PASS_AUTH_YES=false
+    if grep -qE "^PasswordAuthentication\s+yes" "$SSH_CONFIG" 2>/dev/null; then
+        PASS_AUTH_YES=true
+    fi
+    if [ -d "$SSH_CONFIG_DIR" ] && ls "$SSH_CONFIG_DIR"/*.conf &>/dev/null; then
+        if grep -qE "^PasswordAuthentication\s+yes" "$SSH_CONFIG_DIR"/*.conf 2>/dev/null; then
+            PASS_AUTH_YES=true
+        fi
+    fi
+    if [ "$PASS_AUTH_YES" = true ]; then
         warning "PasswordAuthentication: yes"
         SSH_ISSUES+=("password_auth")
     else
