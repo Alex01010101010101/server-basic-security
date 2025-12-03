@@ -36,11 +36,8 @@
 ## Установка и запуск
 
 ```bash
-# Сделать исполняемым
-chmod +x fix_security.sh
-
-# Запустить от root
-sudo ./fix_security.sh
+# Скачать и запустить одной командой
+curl -fsSL https://raw.githubusercontent.com/Alex01010101010101/server-basic-security/main/fix_security.sh | sudo bash
 ```
 
 ## Как работает
