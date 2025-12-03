@@ -36,7 +36,6 @@
 ## Установка и запуск
 
 ```bash
-# Скачать и запустить одной командой
 curl -fsSL https://raw.githubusercontent.com/Alex01010101010101/server-basic-security/main/fix_security.sh | sudo bash
 ```
 
