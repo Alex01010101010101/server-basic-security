@@ -129,7 +129,7 @@ show_restore_menu() {
             ;;
         ssh)
             cp "$file" /etc/ssh/sshd_config
-            systemctl restart sshd
+            systemctl restart ssh || systemctl restart sshd
             success "SSH конфигурация восстановлена из $file"
             ;;
         fail2ban)
@@ -964,7 +964,7 @@ if [ "$DISABLE_PASSWORD_AUTH" = "yes" ] || [ "$DISABLE_ROOT_PASSWORD" = "yes" ];
     
     # Проверяем конфигурацию перед перезапуском
     if sshd -t 2>/dev/null; then
-        systemctl restart sshd
+        systemctl restart ssh || systemctl restart sshd
         success "SSH конфигурация обновлена"
     else
         error "Ошибка в SSH конфигурации! Восстанавливаю из бэкапа..."
