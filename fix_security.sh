@@ -513,9 +513,9 @@ if [ -f "$SSH_CONFIG" ]; then
     echo -e "${CYAN}SSH конфигурация:${NC}"
     
     # Определяем порт SSH (проверяем и основной файл, и drop-in)
-    SSH_PORT=$(grep -hE "^Port " "$SSH_CONFIG" 2>/dev/null | awk '{print $2}' | head -1)
-    if [ -d "$SSH_CONFIG_DIR" ]; then
-        SSH_PORT_DROPIN=$(grep -hE "^Port " "$SSH_CONFIG_DIR"/*.conf 2>/dev/null | awk '{print $2}' | head -1 || true)
+    SSH_PORT=$(grep -hE "^Port " "$SSH_CONFIG" 2>/dev/null | awk '{print $2}' | head -1 || true)
+    if [ -d "$SSH_CONFIG_DIR" ] && [ -n "$(find "$SSH_CONFIG_DIR" -maxdepth 1 -name '*.conf' 2>/dev/null)" ]; then
+        SSH_PORT_DROPIN=$(cat "$SSH_CONFIG_DIR"/*.conf 2>/dev/null | grep -E "^Port " | awk '{print $2}' | head -1 || true)
         [ -n "$SSH_PORT_DROPIN" ] && SSH_PORT="$SSH_PORT_DROPIN"
     fi
     SSH_PORT=${SSH_PORT:-22}
@@ -523,11 +523,11 @@ if [ -f "$SSH_CONFIG" ]; then
     
     # Проверяем PermitRootLogin (учитываем drop-in файлы)
     ROOT_LOGIN_YES=false
-    if grep -qE "^PermitRootLogin\s+yes" "$SSH_CONFIG" 2>/dev/null; then
+    if grep -qE "^PermitRootLogin[[:space:]]+yes" "$SSH_CONFIG" 2>/dev/null; then
         ROOT_LOGIN_YES=true
     fi
-    if [ -d "$SSH_CONFIG_DIR" ] && ls "$SSH_CONFIG_DIR"/*.conf &>/dev/null; then
-        if grep -qE "^PermitRootLogin\s+yes" "$SSH_CONFIG_DIR"/*.conf 2>/dev/null; then
+    if [ -d "$SSH_CONFIG_DIR" ] && [ -n "$(find "$SSH_CONFIG_DIR" -maxdepth 1 -name '*.conf' 2>/dev/null)" ]; then
+        if cat "$SSH_CONFIG_DIR"/*.conf 2>/dev/null | grep -qE "^PermitRootLogin[[:space:]]+yes"; then
             ROOT_LOGIN_YES=true
         fi
     fi
@@ -540,11 +540,11 @@ if [ -f "$SSH_CONFIG" ]; then
     
     # Проверяем PasswordAuthentication
     PASS_AUTH_YES=false
-    if grep -qE "^PasswordAuthentication\s+yes" "$SSH_CONFIG" 2>/dev/null; then
+    if grep -qE "^PasswordAuthentication[[:space:]]+yes" "$SSH_CONFIG" 2>/dev/null; then
         PASS_AUTH_YES=true
     fi
-    if [ -d "$SSH_CONFIG_DIR" ] && ls "$SSH_CONFIG_DIR"/*.conf &>/dev/null; then
-        if grep -qE "^PasswordAuthentication\s+yes" "$SSH_CONFIG_DIR"/*.conf 2>/dev/null; then
+    if [ -d "$SSH_CONFIG_DIR" ] && [ -n "$(find "$SSH_CONFIG_DIR" -maxdepth 1 -name '*.conf' 2>/dev/null)" ]; then
+        if cat "$SSH_CONFIG_DIR"/*.conf 2>/dev/null | grep -qE "^PasswordAuthentication[[:space:]]+yes"; then
             PASS_AUTH_YES=true
         fi
     fi
